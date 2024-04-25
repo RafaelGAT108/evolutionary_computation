@@ -3,7 +3,6 @@ from typing import Union
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
-
 np.seterr(divide='ignore', invalid='ignore')
 
 
