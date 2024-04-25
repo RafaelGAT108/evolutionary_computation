@@ -22,7 +22,7 @@ class Particle:
 
 @dataclass
 class ParticleSwarmOptimization:
-    generations_size: int
+    interations_size: int
     with_update_w: bool
     size_particles: int
     cost_function: callable
@@ -32,7 +32,7 @@ class ParticleSwarmOptimization:
     best_global_position: np.ndarray | None = None
     c1: int = 2
     c2: int = 2
-    w: float = 0.7
+    w: float = 0.9
     w_max: float = 0.9
     w_min: float = 0.4
 
@@ -56,7 +56,7 @@ class ParticleSwarmOptimization:
 
         phi = 4.1
         k = 1
-        x_factor = (2 * k) / (2 - phi - np.sqrt(phi ** 2 - 4 * phi))
+        x_factor = (2 * k) / abs((2 - phi - np.sqrt(phi ** 2 - 4 * phi)))
 
         particle.velocity = x_factor * (particle.velocity + v_u1 + v_u2)
 
@@ -72,7 +72,7 @@ class ParticleSwarmOptimization:
         particle.velocity = self.w * particle.velocity + v_u1 + v_u2
 
     def execute(self):
-        for gen in range(self.generations_size):
+        for gen in range(self.interations_size):
             fitness = []
             for particle in self.particles:
                 particle.fitness = self.cost_function(particle.position[0], particle.position[1])
@@ -92,9 +92,9 @@ class ParticleSwarmOptimization:
                     if particle.fitness < best_global_fitness:
                         self.best_global_position = particle.position
 
-            print(f"Gen: {gen+1} C1: {c1}  C2: {c2}  W: {w}  "
-                  f"Best Global Position: {[round(value, 3) for value in self.best_global_position]} "
-                  f"Best Global Fitness: {round(best_global_fitness, 4)}")
+            # print(f"Gen: {gen+1} C1: {self.c1}  C2: {self.c2}  W: {self.w}  "
+            #       f"Best Global Position: {[round(value, 3) for value in self.best_global_position]} "
+            #       f"Best Global Fitness: {round(best_global_fitness, 4)}")
 
             for particle in self.particles:
                 # Update particles
@@ -106,14 +106,14 @@ class ParticleSwarmOptimization:
 
                 self.update_position(particle)
             if self.with_update_w:
-                self.update_w(interation=gen+1, interation_max=self.generations_size)
+                self.update_w(interation=gen+1, interation_max=self.interations_size)
 
-            self.best_fitness.append(round(np.min(np.array(fitness)), 3))
-            self.mean_fitness.append(round(np.mean(np.array(fitness)), 3))
+            self.best_fitness.append(round(np.array(fitness).min(), 3))
+            self.mean_fitness.append(round(np.array(fitness).mean(), 3))
         print("-"*100)
         return ([round(value, 3) for value in self.best_global_position],
-                round(np.min(np.array(self.best_fitness)), 4),
-                round(np.min(np.array(self.mean_fitness)), 3))
+                round(np.array(self.best_fitness).min(), 4),
+                round(np.array(self.mean_fitness).min(), 3))
 
 
 if __name__ == "__main__":
@@ -141,42 +141,42 @@ if __name__ == "__main__":
     # c2_values = [1, 2, 3]
     # w_values = [.6, .7, .8]
 
-    c1_values = [1, 2, 3]
-    c2_values = [3]
-    w_values = [.8]
+    c1_values = [2]
+    c2_values = [2]
 
     executions = []
     boxplot_data = np.empty((30, 0))
     boxplot_data_mean = np.empty((30, 0))
-
+    s = 1
     for c1 in c1_values:
         for c2 in c2_values:
-            for w in w_values:
-
+            for factor in [True, False]:
                 best_f = []
                 mean_f = []
                 for _ in range(30):
 
                     pso = ParticleSwarmOptimization(cost_function=shubert_cost,
-                                                    generations_size=30,
+                                                    interations_size=30,
                                                     size_particles=440,
-                                                    c1=c1, c2=c2, w=w,
+                                                    c1=c1, c2=c2,
                                                     with_update_w=True,
-                                                    with_constriction_factor=False)
+                                                    with_constriction_factor=True)
 
                     best_global_position, best_fitness, mean_fitness = pso.execute()
                     best_f.append(best_fitness)
                     mean_f.append(mean_fitness)
 
                     executions.append({
+                        "S": s,
                         "C1": c1,
                         "C2": c2,
-                        "W": w,
+                        "Com Constrição?": "sim" if factor is True else "Não",
+                        "W": pso.w,
                         "best_global_position": best_global_position,
                         "best_fitness": best_fitness,
                         "mean_fitness": mean_fitness
                         })
-
+                s += 1
                 boxplot_data = np.hstack((boxplot_data, np.array(best_f).reshape(-1, 1)))
                 boxplot_data_mean = np.hstack((boxplot_data_mean, np.array(mean_f).reshape(-1, 1)))
 
@@ -184,22 +184,24 @@ if __name__ == "__main__":
 
     plt.title(f"Mean Fitness")
     # TODO: Ajustar os nomes das colunas adequadamente
-    df2 = pd.DataFrame(boxplot_data_mean, columns=['P220', 'P440', "P880"])
+    # df2 = pd.DataFrame(boxplot_data_mean, columns=['S1', 'S2', 'S3', 'S4', 'S5', 'S6', 'S7', 'S8', 'S9'])
+    df2 = pd.DataFrame(boxplot_data_mean, columns=['with', 'without'])
     boxplot2 = df2.boxplot()
     fig2 = boxplot2.get_figure()
     # fig.title("Mean Values Features")
-    fig2.savefig('boxplot_mean_shubert_cost.png')
+    fig2.savefig('boxplot_mean_shubert_cost_etapa4.png')
 
     plt.figure(figsize=(10, 5))
     # boxplot_data = np.array(boxplot_data)
 
     plt.title(f"Best Fitness")
-    df = pd.DataFrame(boxplot_data, columns=['P220', 'P440', "P880"])
+    df = pd.DataFrame(boxplot_data, columns=['with', 'without'])
     boxplot = df.boxplot()
     fig = boxplot.get_figure()
     # fig.title("Best Values Features")
-    fig.savefig('boxplot_best_shubert_cost.png')
+    fig.savefig('boxplot_best_shubert_cost_etapa4.png')
 
     executions = sorted(executions, key=lambda x: x["best_fitness"])
     executions = pd.DataFrame(executions)
-    executions.to_excel("pso_shubert_cost.xlsx", index=False)
+    executions.to_excel("pso_shubert_cost_etapa4.xlsx", index=False)
+
