@@ -1,3 +1,4 @@
+from libs.differencial_evolution import DifferencialEvolution
 from libs.genetic_algorithm_binary import GeneticAlgorithmBinary
 import numpy as np
 import pandas as pd
@@ -76,19 +77,43 @@ if __name__ == "__main__":
     boxplot_data = np.hstack((boxplot_data, np.array(best_fitness_pso).reshape(-1, 1)))
     boxplot_data_mean = np.hstack((boxplot_data_mean, np.array(mean_fitness_pso).reshape(-1, 1)))
 
+    best_fitness_de = []
+    mean_fitness_de = []
+
+    initial = time.time()
+    for i in range(30):
+        DE = DifferencialEvolution(population_size=440,
+                                   interations_size=30,
+                                   crossover_rate=0.9,
+                                   cost_function=shubert_cost,
+                                   with_oposition_learning=False,
+                                   F=2)
+
+        best_fitness, mean_fitness = DE.execute()
+
+        best_fitness_de.append(best_fitness)
+        mean_fitness_de.append(mean_fitness)
+    final = time.time()
+    print("-" * 100)
+    print(f"TEMPO DE 30 EXECUÇÕES DO DE: {final - initial}")
+    print("-" * 100)
+
+    boxplot_data = np.hstack((boxplot_data, np.array(best_fitness_de).reshape(-1, 1)))
+    boxplot_data_mean = np.hstack((boxplot_data_mean, np.array(mean_fitness_de).reshape(-1, 1)))
+
     plt.figure(figsize=(10, 5))
     plt.title(f"Mean Fitness")
-    df2 = pd.DataFrame(boxplot_data_mean, columns=['GA', 'PSO'])
+    df2 = pd.DataFrame(boxplot_data_mean, columns=['GA', 'PSO', 'DE'])
     boxplot2 = df2.boxplot()
     fig2 = boxplot2.get_figure()
 
-    fig2.savefig('boxplot_mean_comparative_ga_pso.png')
+    fig2.savefig('boxplot_mean_shubert_cost_comparative_ga_pso_de.png')
 
     plt.figure(figsize=(10, 5))
     plt.title(f"Best Fitness")
-    df = pd.DataFrame(boxplot_data, columns=['GA', 'PSO'])
+    df = pd.DataFrame(boxplot_data, columns=['GA', 'PSO', 'DE'])
     boxplot = df.boxplot()
     fig = boxplot.get_figure()
 
-    fig.savefig('boxplot_best_comparative_ga_pso.png')
+    fig.savefig('boxplot_best_shubert_cost_comparative_ga_pso_de.png')
 
