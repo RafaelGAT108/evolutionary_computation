@@ -4,7 +4,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from functions import *
 import time
-
+import multiprocessing
 @dataclass
 class Wolf:
     position: np.ndarray
@@ -59,6 +59,18 @@ class GrayWolfOptimization:
 
         return self.alpha
 
+def process_step(equation):
+    initial = time.time()
+    gray = GrayWolfOptimization(cost_function=equation,
+                                population_size=100,
+                                interations_size=100)
+
+    alpha = gray.execute()
+    final = time.time()
+    print("-" * 100)
+    print(f"TEMPO DE 100 ITERAÇÕES DO {equation}: {round(final - initial, 2)} seg")
+    print(f"posição do alpha: {[round(float(v), 3) for v in alpha.position]}, "
+          f"fitness: {round(alpha.fitness, 3)}")
 
 if __name__ == "__main__":
     functions = {
@@ -83,6 +95,16 @@ if __name__ == "__main__":
         'bukin_cost': bukin_cost,
         'ackley_cost': ackley_cost
     }
+    list_functions = functions.values()
+
+    initial_total = time.time()
+    with multiprocessing.Pool() as executor:
+        executor.map(process_step, list_functions)
+
+    final_total = time.time()
+    print(f"TEMPO TOTAL PARALELO: {round(final_total - initial_total, 2)} seg \n\n")
+
+    initial_total = time.time()
     for equation_name, equation in functions.items():
         initial = time.time()
         gray = GrayWolfOptimization(cost_function=equation,
@@ -91,8 +113,11 @@ if __name__ == "__main__":
 
         alpha = gray.execute()
         final = time.time()
-        print("-" * 100)
         print(f"TEMPO DE 100 ITERAÇÕES DO {equation_name}: {round(final - initial, 2)} seg")
         print(f"posição do alpha: {[round(float(v), 3) for v in alpha.position]}, "
             f"fitness: {round(alpha.fitness, 3)}")
-        # print("-" * 100)
+
+        print("-" * 100)
+    final_total = time.time()
+
+    print(f"TEMPO TOTAL SEQUENCIAL: {round(final_total - initial_total, 2)} seg")
