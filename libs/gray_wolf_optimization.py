@@ -49,7 +49,7 @@ class GrayWolfOptimization:
             a = 2 - gen * (2 / self.interations_size)
 
             for i, wolf in enumerate(self.population):
-                if i <= 2:
+                if i <= 1:
                     continue
                 X1 = self.calculate_x(a=a, top_wolf=self.alpha, wolf=wolf)
                 X2 = self.calculate_x(a=a, top_wolf=self.beta, wolf=wolf)
@@ -59,18 +59,33 @@ class GrayWolfOptimization:
 
         return self.alpha
 
+
 def process_step(equation):
     initial = time.time()
-    gray = GrayWolfOptimization(cost_function=equation,
-                                population_size=100,
-                                interations_size=100)
+    best_individuals = []
+    for _ in range(30):
 
-    alpha = gray.execute()
+        gray = GrayWolfOptimization(cost_function=equation,
+                                    population_size=100,
+                                    interations_size=1000)
+
+        alpha = gray.execute()
+        best_individuals.append(alpha)
+
+    best_individuals = sorted(best_individuals, key= lambda x: x.fitness)
+
     final = time.time()
     print("-" * 100)
-    print(f"TEMPO DE 100 ITERAÇÕES DO {equation}: {round(final - initial, 2)} seg")
-    print(f"posição do alpha: {[round(float(v), 3) for v in alpha.position]}, "
-          f"fitness: {round(alpha.fitness, 3)}")
+    print(f"TEMPO DE 1000 ITERAÇÕES DO {equation}: {round(final - initial, 2)} seg")
+    # print(f"posição do alpha: {[round(float(v), 3) for v in alpha.position]}, "
+    #       f"fitness: {round(alpha.fitness, 3)}")
+
+    print(f"Melhor: {round(best_individuals[0].fitness, 3)}, "
+          f"Pior: {round(best_individuals[-1].fitness, 3)}, "
+          f"Média: {round(np.mean([f.fitness for f in best_individuals]), 3)}, "
+          f"Mediana: {round(np.median([f.fitness for f in best_individuals]), 3)}, "
+          f"Desvio: {round(np.std([f.fitness for f in best_individuals]), 3)}")
+
 
 if __name__ == "__main__":
     functions = {
@@ -97,25 +112,25 @@ if __name__ == "__main__":
     }
     list_functions = functions.values()
 
-    initial_total = time.time()
-    with multiprocessing.Pool() as executor:
-        executor.map(process_step, list_functions)
-
-    final_total = time.time()
-    print(f"TEMPO TOTAL PARALELO: {round(final_total - initial_total, 2)} seg \n\n")
+    # initial_total = time.time()
+    # with multiprocessing.Pool(6) as executor:
+    #     executor.map(process_step, list_functions)
+    #
+    # final_total = time.time()
+    # print(f"TEMPO TOTAL PARALELO: {round(final_total - initial_total, 2)} seg \n\n")
 
     initial_total = time.time()
     for equation_name, equation in functions.items():
         initial = time.time()
         gray = GrayWolfOptimization(cost_function=equation,
                                     population_size=100,
-                                    interations_size=100)
+                                    interations_size=1000)
 
         alpha = gray.execute()
         final = time.time()
-        print(f"TEMPO DE 100 ITERAÇÕES DO {equation_name}: {round(final - initial, 2)} seg")
+        print(f"TEMPO DE 1000 ITERAÇÕES DO {equation_name}: {round(final - initial, 2)} seg")
         print(f"posição do alpha: {[round(float(v), 3) for v in alpha.position]}, "
-            f"fitness: {round(alpha.fitness, 3)}")
+              f"fitness: {round(alpha.fitness, 3)}")
 
         print("-" * 100)
     final_total = time.time()
