@@ -167,3 +167,20 @@ def goldstein_price_cost(x, y):
     term1 = 1 + (x + y + 1) ** 2 * (19 - 14 * x + 3 * x ** 2 - 14 * y + 6 * x * y + 3 * y ** 2)
     term2 = 30 + (2 * x - 3 * y) ** 2 * (18 - 32 * x + 12 * x ** 2 + 48 * y - 36 * x * y + 27 * y ** 2)
     return term1 * term2
+
+#Função De Jong N.5
+def jong_cost(x, y):
+    A = np.zeros((2, 25))
+    a = np.array([-32, -16, 0, 16, 32])
+    A[0, :] = np.tile(a, 5)
+    A[1, :] = np.repeat(a, 5)
+
+    term1 = np.arange(1, 26)
+    term2 = (x - A[0, 1:26])**6
+    term3 = (y - A[1, 1:26])**6
+    sum_terms = 1 / (term1 + term2 + term3)
+
+    sum_total = np.sum(sum_terms)
+
+    sum = 1 / (0.002 + sum_total)
+    return sum
