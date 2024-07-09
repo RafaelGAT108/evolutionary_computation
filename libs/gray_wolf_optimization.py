@@ -108,7 +108,8 @@ if __name__ == "__main__":
         'drop_cost': drop_cost,
         'cross_cost': cross_cost,
         'bukin_cost': bukin_cost,
-        'ackley_cost': ackley_cost
+        'ackley_cost': ackley_cost,
+        'jong_cost': jong_cost
     }
     list_functions = functions.values()
 
@@ -122,17 +123,29 @@ if __name__ == "__main__":
     initial_total = time.time()
     for equation_name, equation in functions.items():
         initial = time.time()
-        gray = GrayWolfOptimization(cost_function=equation,
-                                    population_size=100,
-                                    interations_size=1000)
 
-        alpha = gray.execute()
+        best_individuals = []
+        for _ in range(30):
+            gray = GrayWolfOptimization(cost_function=equation,
+                                        population_size=100,
+                                        interations_size=1000)
+
+            alpha = gray.execute()
+            best_individuals.append(alpha)
+
+        best_individuals = sorted(best_individuals, key=lambda x: x.fitness)
+
         final = time.time()
-        print(f"TEMPO DE 1000 ITERAÇÕES DO {equation_name}: {round(final - initial, 2)} seg")
-        print(f"posição do alpha: {[round(float(v), 3) for v in alpha.position]}, "
-              f"fitness: {round(alpha.fitness, 3)}")
-
         print("-" * 100)
+        print(f"30 Execuções de 1000 ITERAÇÕES DO {equation}: {round(final - initial, 2)} seg")
+        # print(f"posição do alpha: {[round(float(v), 3) for v in alpha.position]}, "
+        #       f"fitness: {round(alpha.fitness, 3)}")
+
+        print(f"Melhor: {round(best_individuals[0].fitness, 3)}, "
+              f"Pior: {round(best_individuals[-1].fitness, 3)}, "
+              f"Média: {round(np.mean([f.fitness for f in best_individuals]), 3)}, "
+              f"Mediana: {round(np.median([f.fitness for f in best_individuals]), 3)}, "
+              f"Desvio: {round(np.std([f.fitness for f in best_individuals]), 3)}")
     final_total = time.time()
 
     print(f"TEMPO TOTAL SEQUENCIAL: {round(final_total - initial_total, 2)} seg")
