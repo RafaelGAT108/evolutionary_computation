@@ -20,21 +20,21 @@ class GrayWolfOptimization:
     population: list[Wolf] = field(init=False)
     population_size: int
     interations_size: int
-    min_range: Union[float, int, list]
-    max_range: Union[float, int, list]
+    min_range: Union[list, float, int]
+    max_range: Union[list, float, int]
+    alpha = beta = delta = None
 
     def __post_init__(self):
-        # self.population = [Wolf(position=np.random.randn(2))
-        #                    for _ in range(self.population_size)]
         if isinstance(self.max_range, Union[float, int]) and isinstance(self.min_range, Union[float, int]):
             self.population = [Wolf(position=np.random.uniform(self.min_range, self.max_range, 2))
                                for _ in range(self.population_size)]
 
         elif type(self.max_range) is list and type(self.min_range) is list:
-            self.population = [Wolf(position=np.array([float(np.random.uniform(self.min_range[0], self.min_range[1], 1)[0]),
-                                                       float(np.random.uniform(self.max_range[0], self.max_range[1], 1)[0])]))
+            self.population = [Wolf(position=np.array([float(np.random.uniform(self.min_range[0],
+                                                                               self.min_range[1], 1)[0]),
+                                                       float(np.random.uniform(self.max_range[0],
+                                                                               self.max_range[1], 1)[0])]))
                                for _ in range(self.population_size)]
-        self.alpha = self.beta = self.delta = None
 
     def calculate_x(self, a, top_wolf, wolf):
         r1, r2 = np.random.rand(2)
@@ -54,14 +54,10 @@ class GrayWolfOptimization:
             self.population = sorted(self.population, key=lambda x: x.fitness)
             self.alpha, self.beta, self.delta = self.population[:3]
 
-            # print(
-            #     f"int: {gen + 1}, posição do alpha: {[round(float(v), 3) for v in self.alpha.position]}, "
-            #     f"posição: {round(self.alpha.fitness, 3)}")
-
             a = 2 - gen * (2 / self.interations_size)
 
             for i, wolf in enumerate(self.population):
-                if i <= 1:
+                if i < 1:
                     continue
                 X1 = self.calculate_x(a=a, top_wolf=self.alpha, wolf=wolf)
                 X2 = self.calculate_x(a=a, top_wolf=self.beta, wolf=wolf)
