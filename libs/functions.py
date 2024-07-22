@@ -176,8 +176,8 @@ def jong_cost(x, y):
     A[1, :] = np.repeat(a, 5)
 
     term1 = np.arange(1, 25)
-    term2 = (x - A[0, :26])**6
-    term3 = (y - A[1, :26])**6
+    term2 = (x - A[0, 1:26])**6
+    term3 = (y - A[1, 1:26])**6
     sum_terms = 1 / (term1 + term2 + term3)
 
     sum_total = np.sum(sum_terms)
