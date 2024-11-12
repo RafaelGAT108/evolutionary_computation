@@ -20,6 +20,7 @@ from tensorflow.keras.utils import to_categorical
 import warnings
 warnings.filterwarnings('ignore')
 
+
 def run_model(model, X_train, y_train, X_test, y_test, metric):
 
     if metric == 'train':
@@ -42,7 +43,7 @@ def run_model(model, X_train, y_train, X_test, y_test, metric):
 
 
 def evaluate_function(chromossome, metric = 'train'):
-    data = pd.read_csv('/home/rafael/Mestrado/Artigo TLBO/database/homem2.csv', delimiter=';')
+    data = pd.read_csv('/home/rafael/Mestrado/Artigo TLBO/database/mulher1.csv', delimiter=';')
     label_counts = data['Output'].value_counts().sort_index()
     data['Output'] = data['Output'] - 1
     data = data.dropna(axis=1)
