@@ -22,16 +22,13 @@ class TLBO:
     cost_function: callable
     population_size: int
     iterations_size: int
-    zero_percentage: float
     dim: int = 9
     population: list[Student] = field(init=False)
 
     def __post_init__(self):
         # Inicializa a população com vetores binários de features (80% 0s e 20% 1s)
-        self.population = [Student(position=np.random.choice([0, 1], size=self.dim, p=[self.zero_percentage, 1 - self.zero_percentage]))
+        self.population = [Student(position=np.random.choice([0, 1], size=self.dim, p=[0.80, 0.20]))
                            for _ in range(self.population_size)]
-        # self.population = [Student(position=np.random.choice([0, 1], size=self.dim, p=[0.80, 0.20]))
-        #                    for _ in range(self.population_size)]
 
     def teacher_phase(self, student_position, best_solution, mean_solution, tf, student_fitness):
         # Atualiza a posição baseada na fase do professor, usando seleção binária
